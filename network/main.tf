@@ -4,15 +4,15 @@ terraform {
     aws = ">= 3.37.0"
   }
   backend "s3" {
-    bucket = "tfstate-terraform-template"
+    bucket = "tfstate-sbcntr"
     key    = "network/terraform.tfstate"
     region = "ap-northeast-1"
   }
 }
 
 locals {
-  projectName = "terraform-template"
-  environment = "dev"
+  projectName = "sbcntr"
+  environment = "NA"
   namePrefix  = "${local.projectName}-${local.environment}"
   toolName    = "terraform"
 }
@@ -21,8 +21,8 @@ locals {
 # VPC
 #--------------------------------------------------
 
-resource "aws_vpc" "terraform_template" {
-  cidr_block           = "172.16.0.0/16"
+resource "aws_vpc" "sbcntr" {
+  cidr_block           = "10.1.0.0/16"
   enable_dns_support   = true
   enable_dns_hostnames = true
 
@@ -39,43 +39,77 @@ resource "aws_vpc" "terraform_template" {
 # Public subnet
 #--------------------------------------------------
 
-resource "aws_subnet" "public_1a" {
-  vpc_id                  = aws_vpc.terraform_template.id
-  cidr_block              = cidrsubnet(aws_vpc.terraform_template.cidr_block, 8, 0)
+# ingress用
+
+resource "aws_subnet" "public_ingress_1a" {
+  vpc_id                  = aws_vpc.sbcntr.id
+  cidr_block              = cidrsubnet(aws_vpc.sbcntr.cidr_block, 8, 0)
   map_public_ip_on_launch = true
   availability_zone       = "ap-northeast-1a"
 
   tags = {
-    Name         = "${local.namePrefix}-public-subnet-1a"
+    Name         = "${local.namePrefix}-public-subnet-ingress-1a"
     ProjectName  = local.projectName
     Environment  = local.environment
-    ResourceName = "public-subnet-1a"
+    ResourceName = "public-subnet-ingress-1a"
     Tool         = local.toolName
 
   }
 }
 
-resource "aws_subnet" "public_1c" {
-  vpc_id                  = aws_vpc.terraform_template.id
-  cidr_block              = cidrsubnet(aws_vpc.terraform_template.cidr_block, 8, 1)
+resource "aws_subnet" "public_ingress_1c" {
+  vpc_id                  = aws_vpc.sbcntr.id
+  cidr_block              = cidrsubnet(aws_vpc.sbcntr.cidr_block, 8, 1)
   map_public_ip_on_launch = true
   availability_zone       = "ap-northeast-1c"
 
   tags = {
-    Name         = "${local.namePrefix}-public-subnet-1c"
+    Name         = "${local.namePrefix}-public-subnet-ingress-1c"
     ProjectName  = local.projectName
     Environment  = local.environment
-    ResourceName = "public-subnet-1c"
+    ResourceName = "public-subnet-ingress-1c"
     Tool         = local.toolName
   }
 }
 
-resource "aws_internet_gateway" "terraform_template" {
-  vpc_id = aws_vpc.terraform_template.id
+# 管理用
+
+resource "aws_subnet" "private_management_1a" {
+  vpc_id                  = aws_vpc.sbcntr.id
+  cidr_block              = cidrsubnet(aws_vpc.sbcntr.cidr_block, 8, 240)
+  map_public_ip_on_launch = true
+  availability_zone       = "ap-northeast-1a"
+
+  tags = {
+    Name         = "${local.namePrefix}-public-subnet-management-1a"
+    ProjectName  = local.projectName
+    Environment  = local.environment
+    ResourceName = "public-subnet-management-1a"
+    Tool         = local.toolName
+  }
+}
+
+resource "aws_subnet" "private_management_1c" {
+  vpc_id                  = aws_vpc.sbcntr.id
+  cidr_block              = cidrsubnet(aws_vpc.sbcntr.cidr_block, 8, 241)
+  map_public_ip_on_launch = true
+  availability_zone       = "ap-northeast-1c"
+
+  tags = {
+    Name         = "${local.namePrefix}-public-subnet-management-1c"
+    ProjectName  = local.projectName
+    Environment  = local.environment
+    ResourceName = "public-subnet-management-1c"
+    Tool         = local.toolName
+  }
+}
+
+resource "aws_internet_gateway" "sbcntr" {
+  vpc_id = aws_vpc.sbcntr.id
 }
 
 resource "aws_route_table" "public" {
-  vpc_id = aws_vpc.terraform_template.id
+  vpc_id = aws_vpc.sbcntr.id
 
   tags = {
     Name         = "${local.namePrefix}-public-rtb"
@@ -88,17 +122,27 @@ resource "aws_route_table" "public" {
 
 resource "aws_route" "public" {
   route_table_id         = aws_route_table.public.id
-  gateway_id             = aws_internet_gateway.terraform_template.id
+  gateway_id             = aws_internet_gateway.sbcntr.id
   destination_cidr_block = "0.0.0.0/0"
 }
 
-resource "aws_route_table_association" "public_1a" {
-  subnet_id      = aws_subnet.public_1a.id
+resource "aws_route_table_association" "public_ingress_1a" {
+  subnet_id      = aws_subnet.public_ingress_1a.id
   route_table_id = aws_route_table.public.id
 }
 
-resource "aws_route_table_association" "public_1c" {
-  subnet_id      = aws_subnet.public_1c.id
+resource "aws_route_table_association" "public_ingress_1c" {
+  subnet_id      = aws_subnet.public_ingress_1c.id
+  route_table_id = aws_route_table.public.id
+}
+
+resource "aws_route_table_association" "private_management_1a" {
+  subnet_id      = aws_subnet.private_management_1a.id
+  route_table_id = aws_route_table.public.id
+}
+
+resource "aws_route_table_association" "private_management_1c" {
+  subnet_id      = aws_subnet.private_management_1c.id
   route_table_id = aws_route_table.public.id
 }
 
@@ -106,172 +150,100 @@ resource "aws_route_table_association" "public_1c" {
 # Private subnet
 #--------------------------------------------------
 
-resource "aws_subnet" "private_1a" {
-  vpc_id                  = aws_vpc.terraform_template.id
-  cidr_block              = cidrsubnet(aws_vpc.terraform_template.cidr_block, 8, 2)
+# アプリケーション用
+
+resource "aws_subnet" "private_container_1a" {
+  vpc_id                  = aws_vpc.sbcntr.id
+  cidr_block              = cidrsubnet(aws_vpc.sbcntr.cidr_block, 8, 8)
   map_public_ip_on_launch = false
   availability_zone       = "ap-northeast-1a"
 
   tags = {
-    Name         = "${local.namePrefix}-private-subnet-1a"
+    Name         = "${local.namePrefix}-private-subnet-container-1a"
     ProjectName  = local.projectName
     Environment  = local.environment
-    ResourceName = "private-subnet-1a"
+    ResourceName = "private-subnet-container-1a"
     Tool         = local.toolName
   }
 }
 
-resource "aws_subnet" "private_1c" {
-  vpc_id                  = aws_vpc.terraform_template.id
-  cidr_block              = cidrsubnet(aws_vpc.terraform_template.cidr_block, 8, 3)
+resource "aws_subnet" "private_container_1c" {
+  vpc_id                  = aws_vpc.sbcntr.id
+  cidr_block              = cidrsubnet(aws_vpc.sbcntr.cidr_block, 8, 9)
   map_public_ip_on_launch = false
   availability_zone       = "ap-northeast-1c"
 
   tags = {
-    Name         = "${local.namePrefix}-private-subnet-1c"
+    Name         = "${local.namePrefix}-private-subnet-container-1c"
     ProjectName  = local.projectName
     Environment  = local.environment
-    ResourceName = "private-subnet-1c"
+    ResourceName = "private-subnet-container-1c"
     Tool         = local.toolName
   }
 }
 
-resource "aws_route_table" "private_1a" {
-  vpc_id = aws_vpc.terraform_template.id
+# DB用
 
-  tags = {
-    Name         = "${local.namePrefix}-private-rtb-1"
-    ProjectName  = local.projectName
-    Environment  = local.environment
-    ResourceName = "private-rtb-1"
-    Tool         = local.toolName
-  }
-}
-
-resource "aws_route_table" "private_1c" {
-  vpc_id = aws_vpc.terraform_template.id
-
-  tags = {
-    Name         = "${local.namePrefix}-private-rtb-2"
-    ProjectName  = local.projectName
-    Environment  = local.environment
-    ResourceName = "private-rtb-2"
-    Tool         = local.toolName
-  }
-}
-
-resource "aws_route" "private_1a" {
-  route_table_id         = aws_route_table.private_1a.id
-  nat_gateway_id         = aws_nat_gateway.terraform_template_0.id
-  destination_cidr_block = "0.0.0.0/0"
-}
-
-resource "aws_route" "private_1c" {
-  route_table_id         = aws_route_table.private_1c.id
-  nat_gateway_id         = aws_nat_gateway.terraform_template_1.id
-  destination_cidr_block = "0.0.0.0/0"
-}
-
-resource "aws_route_table_association" "private_1a" {
-  subnet_id      = aws_subnet.private_1a.id
-  route_table_id = aws_route_table.private_1a.id
-}
-
-resource "aws_route_table_association" "private_1c" {
-  subnet_id      = aws_subnet.private_1c.id
-  route_table_id = aws_route_table.private_1c.id
-}
-
-#--------------------------------------------------
-#  Private subnet for DB
-#--------------------------------------------------
-
-resource "aws_subnet" "private_1a_db" {
-  vpc_id                  = aws_vpc.terraform_template.id
-  cidr_block              = cidrsubnet(aws_vpc.terraform_template.cidr_block, 8, 4)
+resource "aws_subnet" "private_db_1a" {
+  vpc_id                  = aws_vpc.sbcntr.id
+  cidr_block              = cidrsubnet(aws_vpc.sbcntr.cidr_block, 8, 16)
   map_public_ip_on_launch = false
   availability_zone       = "ap-northeast-1a"
 
   tags = {
-    Name         = "${local.namePrefix}-private-subnet-1a-db"
+    Name         = "${local.namePrefix}-private-subnet-db-1a"
     ProjectName  = local.projectName
     Environment  = local.environment
-    ResourceName = "private-subnet-1a-db"
+    ResourceName = "private-subnet-db-1a"
     Tool         = local.toolName
   }
 }
 
-resource "aws_subnet" "private_1c_db" {
-  vpc_id                  = aws_vpc.terraform_template.id
-  cidr_block              = cidrsubnet(aws_vpc.terraform_template.cidr_block, 8, 5)
+resource "aws_subnet" "private_db_1c" {
+  vpc_id                  = aws_vpc.sbcntr.id
+  cidr_block              = cidrsubnet(aws_vpc.sbcntr.cidr_block, 8, 17)
   map_public_ip_on_launch = false
   availability_zone       = "ap-northeast-1c"
 
   tags = {
-    Name         = "${local.namePrefix}-private-subnet-1c-db"
+    Name         = "${local.namePrefix}-private-subnet-db-1c"
     ProjectName  = local.projectName
     Environment  = local.environment
-    ResourceName = "private-subnet-1c-db"
+    ResourceName = "private-subnet-db-1c"
     Tool         = local.toolName
   }
 }
 
-resource "aws_route_table" "private_db" {
-  vpc_id = aws_vpc.terraform_template.id
+resource "aws_route_table" "private" {
+  vpc_id = aws_vpc.sbcntr.id
 
   tags = {
-    Name         = "${local.namePrefix}-private-rtb-db"
+    Name         = "${local.namePrefix}-private-rtb"
     ProjectName  = local.projectName
     Environment  = local.environment
-    ResourceName = "private-rtb-db"
+    ResourceName = "private-rtb"
     Tool         = local.toolName
   }
 }
 
-resource "aws_route_table_association" "private_1a_db" {
-  subnet_id      = aws_subnet.private_1a_db.id
-  route_table_id = aws_route_table.private_db.id
+# デフォルトでローカルを向いているのでルートの追加は不要？
+
+resource "aws_route_table_association" "private_container_1a" {
+  subnet_id      = aws_subnet.private_container_1a.id
+  route_table_id = aws_route_table.private.id
 }
 
-resource "aws_route_table_association" "private_1c_db" {
-  subnet_id      = aws_subnet.private_1c_db.id
-  route_table_id = aws_route_table.private_db.id
+resource "aws_route_table_association" "private_container_1c" {
+  subnet_id      = aws_subnet.private_container_1c.id
+  route_table_id = aws_route_table.private.id
 }
 
-#--------------------------------------------------
-# NAT Gateway
-#--------------------------------------------------
-
-resource "aws_eip" "nat_gateway_0" {
-  vpc = true
-
-  depends_on = [
-    aws_internet_gateway.terraform_template
-  ]
+resource "aws_route_table_association" "private_db_1a" {
+  subnet_id      = aws_subnet.private_db_1a.id
+  route_table_id = aws_route_table.private.id
 }
 
-resource "aws_eip" "nat_gateway_1" {
-  vpc = true
-
-  depends_on = [
-    aws_internet_gateway.terraform_template
-  ]
-}
-
-resource "aws_nat_gateway" "terraform_template_0" {
-  allocation_id = aws_eip.nat_gateway_0.id
-  subnet_id     = aws_subnet.public_1a.id
-
-  depends_on = [
-    aws_internet_gateway.terraform_template
-  ]
-}
-
-resource "aws_nat_gateway" "terraform_template_1" {
-  allocation_id = aws_eip.nat_gateway_1.id
-  subnet_id     = aws_subnet.public_1c.id
-
-  depends_on = [
-    aws_internet_gateway.terraform_template
-  ]
+resource "aws_route_table_association" "private_db_1c" {
+  subnet_id      = aws_subnet.private_db_1c.id
+  route_table_id = aws_route_table.private.id
 }
