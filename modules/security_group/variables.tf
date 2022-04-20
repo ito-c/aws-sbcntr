@@ -13,23 +13,19 @@ variable "source_security_group_id" {
   description = "specify security group id"
   default     = "Your Value Here"
 }
-variable "resource_name" {
+variable "resource" {
   description = "project name"
   type        = string
-  default     = "Your Value Here"
 }
-variable "project_name" {
+variable "project" {
   description = "project name"
   type        = string
-  default     = "terraform_template"
 }
-variable "tool_name" {
+variable "tool" {
   description = "tool name"
   type        = string
-  default     = "terraform"
 }
 variable "environment" {
   description = "environment"
   type        = string
-  default     = "dev"
 }

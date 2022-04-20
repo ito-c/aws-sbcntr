@@ -1,13 +1,13 @@
-resource "aws_security_group" "default" {
-  name   = "${var.project_name}-${var.environment}-security-group-for-${var.resource_name}"
+resource "aws_security_group" "this" {
+  name   = "${var.project}-${var.environment}-security-group-for-${var.resource}"
   vpc_id = var.vpc_id
 
   tags = {
-    Name        = "${var.project_name}-${var.environment}-security-group-for-${var.resource_name}"
-    Project     = var.project_name
+    Name        = "${var.project}-${var.environment}-security-group-for-${var.resource}"
+    Project     = var.project
     Environment = var.environment
-    Resource    = var.resource_name
-    Tool        = var.tool_name
+    Resource    = var.resource
+    Tool        = var.tool
   }
 }
 
@@ -19,7 +19,7 @@ resource "aws_security_group_rule" "ingress" {
   to_port           = var.port
   protocol          = "tcp"
   cidr_blocks       = var.cidr_blocks
-  security_group_id = aws_security_group.default.id
+  security_group_id = aws_security_group.this.id
 }
 
 resource "aws_security_group_rule" "ingress_source_sg" {
@@ -30,7 +30,7 @@ resource "aws_security_group_rule" "ingress_source_sg" {
   to_port                  = var.port
   protocol                 = "tcp"
   source_security_group_id = var.source_security_group_id
-  security_group_id        = aws_security_group.default.id
+  security_group_id        = aws_security_group.this.id
 }
 
 resource "aws_security_group_rule" "egress" {
@@ -39,5 +39,5 @@ resource "aws_security_group_rule" "egress" {
   to_port           = 0
   protocol          = "-1"
   cidr_blocks       = ["0.0.0.0/0"]
-  security_group_id = aws_security_group.default.id
+  security_group_id = aws_security_group.this.id
 }
