@@ -1,15 +1,3 @@
-terraform {
-  required_version = ">= 0.12.0"
-  required_providers {
-    aws = ">= 3.37.0"
-  }
-  backend "s3" {
-    bucket = "tfstate-sbcntr"
-    key    = "network/terraform.tfstate"
-    region = "ap-northeast-1"
-  }
-}
-
 locals {
   projectName = "sbcntr"
   environment = "NA"
