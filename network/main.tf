@@ -1,8 +1,8 @@
 locals {
-  projectName = "sbcntr"
+  project     = "sbcntr"
   environment = "NA"
-  namePrefix  = "${local.projectName}-${local.environment}"
-  toolName    = "terraform"
+  namePrefix  = "${local.project}-${local.environment}"
+  tool        = "terraform"
 }
 
 #--------------------------------------------------
@@ -15,11 +15,11 @@ resource "aws_vpc" "sbcntr" {
   enable_dns_hostnames = true
 
   tags = {
-    Name         = "${local.namePrefix}-vpc"
-    ProjectName  = local.projectName
-    Environment  = local.environment
-    ResourceName = "vpc"
-    Tool         = local.toolName
+    Name        = "${local.namePrefix}-vpc"
+    Project     = local.project
+    Environment = local.environment
+    Resource    = "vpc"
+    Tool        = local.tool
   }
 }
 
@@ -36,11 +36,11 @@ resource "aws_subnet" "public_ingress_1a" {
   availability_zone       = "ap-northeast-1a"
 
   tags = {
-    Name         = "${local.namePrefix}-public-subnet-ingress-1a"
-    ProjectName  = local.projectName
-    Environment  = local.environment
-    ResourceName = "public-subnet-ingress-1a"
-    Tool         = local.toolName
+    Name        = "${local.namePrefix}-public-subnet-ingress-1a"
+    Project     = local.project
+    Environment = local.environment
+    Resource    = "public-subnet-ingress-1a"
+    Tool        = local.tool
 
   }
 }
@@ -52,11 +52,11 @@ resource "aws_subnet" "public_ingress_1c" {
   availability_zone       = "ap-northeast-1c"
 
   tags = {
-    Name         = "${local.namePrefix}-public-subnet-ingress-1c"
-    ProjectName  = local.projectName
-    Environment  = local.environment
-    ResourceName = "public-subnet-ingress-1c"
-    Tool         = local.toolName
+    Name        = "${local.namePrefix}-public-subnet-ingress-1c"
+    Project     = local.project
+    Environment = local.environment
+    Resource    = "public-subnet-ingress-1c"
+    Tool        = local.tool
   }
 }
 
@@ -69,11 +69,11 @@ resource "aws_subnet" "private_management_1a" {
   availability_zone       = "ap-northeast-1a"
 
   tags = {
-    Name         = "${local.namePrefix}-public-subnet-management-1a"
-    ProjectName  = local.projectName
-    Environment  = local.environment
-    ResourceName = "public-subnet-management-1a"
-    Tool         = local.toolName
+    Name        = "${local.namePrefix}-public-subnet-management-1a"
+    Project     = local.project
+    Environment = local.environment
+    Resource    = "public-subnet-management-1a"
+    Tool        = local.tool
   }
 }
 
@@ -84,11 +84,11 @@ resource "aws_subnet" "private_management_1c" {
   availability_zone       = "ap-northeast-1c"
 
   tags = {
-    Name         = "${local.namePrefix}-public-subnet-management-1c"
-    ProjectName  = local.projectName
-    Environment  = local.environment
-    ResourceName = "public-subnet-management-1c"
-    Tool         = local.toolName
+    Name        = "${local.namePrefix}-public-subnet-management-1c"
+    Project     = local.project
+    Environment = local.environment
+    Resource    = "public-subnet-management-1c"
+    Tool        = local.tool
   }
 }
 
@@ -100,11 +100,11 @@ resource "aws_route_table" "public" {
   vpc_id = aws_vpc.sbcntr.id
 
   tags = {
-    Name         = "${local.namePrefix}-public-rtb"
-    ProjectName  = local.projectName
-    Environment  = local.environment
-    ResourceName = "public-rtb"
-    Tool         = local.toolName
+    Name        = "${local.namePrefix}-public-rtb"
+    Project     = local.project
+    Environment = local.environment
+    Resource    = "public-rtb"
+    Tool        = local.tool
   }
 }
 
@@ -147,11 +147,11 @@ resource "aws_subnet" "private_container_1a" {
   availability_zone       = "ap-northeast-1a"
 
   tags = {
-    Name         = "${local.namePrefix}-private-subnet-container-1a"
-    ProjectName  = local.projectName
-    Environment  = local.environment
-    ResourceName = "private-subnet-container-1a"
-    Tool         = local.toolName
+    Name        = "${local.namePrefix}-private-subnet-container-1a"
+    Project     = local.project
+    Environment = local.environment
+    Resource    = "private-subnet-container-1a"
+    Tool        = local.tool
   }
 }
 
@@ -162,11 +162,11 @@ resource "aws_subnet" "private_container_1c" {
   availability_zone       = "ap-northeast-1c"
 
   tags = {
-    Name         = "${local.namePrefix}-private-subnet-container-1c"
-    ProjectName  = local.projectName
-    Environment  = local.environment
-    ResourceName = "private-subnet-container-1c"
-    Tool         = local.toolName
+    Name        = "${local.namePrefix}-private-subnet-container-1c"
+    Project     = local.project
+    Environment = local.environment
+    Resource    = "private-subnet-container-1c"
+    Tool        = local.tool
   }
 }
 
@@ -179,11 +179,11 @@ resource "aws_subnet" "private_db_1a" {
   availability_zone       = "ap-northeast-1a"
 
   tags = {
-    Name         = "${local.namePrefix}-private-subnet-db-1a"
-    ProjectName  = local.projectName
-    Environment  = local.environment
-    ResourceName = "private-subnet-db-1a"
-    Tool         = local.toolName
+    Name        = "${local.namePrefix}-private-subnet-db-1a"
+    Project     = local.project
+    Environment = local.environment
+    Resource    = "private-subnet-db-1a"
+    Tool        = local.tool
   }
 }
 
@@ -194,11 +194,11 @@ resource "aws_subnet" "private_db_1c" {
   availability_zone       = "ap-northeast-1c"
 
   tags = {
-    Name         = "${local.namePrefix}-private-subnet-db-1c"
-    ProjectName  = local.projectName
-    Environment  = local.environment
-    ResourceName = "private-subnet-db-1c"
-    Tool         = local.toolName
+    Name        = "${local.namePrefix}-private-subnet-db-1c"
+    Project     = local.project
+    Environment = local.environment
+    Resource    = "private-subnet-db-1c"
+    Tool        = local.tool
   }
 }
 
@@ -206,11 +206,11 @@ resource "aws_route_table" "private" {
   vpc_id = aws_vpc.sbcntr.id
 
   tags = {
-    Name         = "${local.namePrefix}-private-rtb"
-    ProjectName  = local.projectName
-    Environment  = local.environment
-    ResourceName = "private-rtb"
-    Tool         = local.toolName
+    Name        = "${local.namePrefix}-private-rtb"
+    Project     = local.project
+    Environment = local.environment
+    Resource    = "private-rtb"
+    Tool        = local.tool
   }
 }
 

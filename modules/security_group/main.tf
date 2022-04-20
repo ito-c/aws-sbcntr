@@ -3,11 +3,11 @@ resource "aws_security_group" "default" {
   vpc_id = var.vpc_id
 
   tags = {
-    Name         = "${var.project_name}-${var.environment}-security-group-for-${var.resource_name}"
-    ProjectName  = var.project_name
-    Environment  = var.environment
-    ResourceName = var.resource_name
-    Tool         = var.tool_name
+    Name        = "${var.project_name}-${var.environment}-security-group-for-${var.resource_name}"
+    Project     = var.project_name
+    Environment = var.environment
+    Resource    = var.resource_name
+    Tool        = var.tool_name
   }
 }
 
