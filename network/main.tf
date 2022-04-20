@@ -202,6 +202,106 @@ resource "aws_subnet" "private_db_1c" {
   }
 }
 
+# ECRのVPCエンドポイント用
+
+resource "aws_subnet" "private_egress_1a" {
+  vpc_id                  = aws_vpc.sbcntr.id
+  cidr_block              = cidrsubnet(aws_vpc.sbcntr.cidr_block, 8, 248)
+  map_public_ip_on_launch = false
+  availability_zone       = "ap-northeast-1a"
+
+  tags = {
+    Name        = "${local.namePrefix}-private-egress-1a"
+    Project     = local.project
+    Environment = local.environment
+    Resource    = "private-egress-1a"
+    Tool        = local.tool
+  }
+}
+
+resource "aws_subnet" "private_egress_1c" {
+  vpc_id                  = aws_vpc.sbcntr.id
+  cidr_block              = cidrsubnet(aws_vpc.sbcntr.cidr_block, 8, 249)
+  map_public_ip_on_launch = false
+  availability_zone       = "ap-northeast-1c"
+
+  tags = {
+    Name        = "${local.namePrefix}-private-egress-1c"
+    Project     = local.project
+    Environment = local.environment
+    Resource    = "private-egress-1c"
+    Tool        = local.tool
+  }
+}
+
+# VPCエンドポイントのセキュリティグループ
+
+module "security_group_for_vpc_endpoint" {
+  source      = "../modules/security_group"
+  vpc_id      = aws_vpc.sbcntr.id
+  port        = "80"
+  cidr_blocks = ["0.0.0.0/0"]
+
+  environment = local.environment
+  project     = local.project
+  resource    = "vpc-endpoint"
+  tool        = local.tool
+}
+
+# VPCエンドポイント
+resource "aws_vpc_endpoint" "ecr_api" {
+  vpc_id            = aws_vpc.sbcntr.id
+  service_name      = "com.amazonaws.ap-northeast-1.ecr.api"
+  vpc_endpoint_type = "Interface"
+  subnet_ids        = [aws_subnet.private_egress_1a.id, aws_subnet.private_egress_1c.id]
+
+  private_dns_enabled = true
+  security_group_ids  = [module.security_group_for_vpc_endpoint.security_group_id]
+
+  tags = {
+    Name        = "${local.namePrefix}-vpce-ecr-api"
+    Project     = local.project
+    Environment = local.environment
+    Resource    = "vpce-ecr-api"
+    Tool        = local.tool
+  }
+}
+
+resource "aws_vpc_endpoint" "ecr_dkr" {
+  vpc_id            = aws_vpc.sbcntr.id
+  service_name      = "com.amazonaws.ap-northeast-1.ecr.dkr"
+  vpc_endpoint_type = "Interface"
+  subnet_ids        = [aws_subnet.private_egress_1a.id, aws_subnet.private_egress_1c.id]
+
+  private_dns_enabled = true
+  security_group_ids  = [module.security_group_for_vpc_endpoint.security_group_id]
+
+  tags = {
+    Name        = "${local.namePrefix}-vpce-ecr-dkr"
+    Project     = local.project
+    Environment = local.environment
+    Resource    = "vpce-ecr-dkr"
+    Tool        = local.tool
+  }
+}
+
+resource "aws_vpc_endpoint" "s3" {
+  vpc_id            = aws_vpc.sbcntr.id
+  service_name      = "com.amazonaws.ap-northeast-1.s3"
+  vpc_endpoint_type = "Gateway"
+  route_table_ids   = [aws_route_table.private.id]
+
+  tags = {
+    Name        = "${local.namePrefix}-vpce-s3"
+    Project     = local.project
+    Environment = local.environment
+    Resource    = "vpce-s3"
+    Tool        = local.tool
+  }
+}
+
+# ルートテーブル
+
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.sbcntr.id
 
