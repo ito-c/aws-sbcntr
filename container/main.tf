@@ -1,7 +1,6 @@
 locals {
   project     = "sbcntr"
   environment = "NA"
-  namePrefix  = "${local.project}-${local.environment}"
 }
 
 #--------------------------------------------------
@@ -21,10 +20,9 @@ resource "aws_ecr_repository" "sbcntr_backend" {
   }
 
   tags = {
-    Name        = "${local.namePrefix}-ecr-backend"
+    Name        = "${local.project}-${local.environment}-ecr-backend"
     Project     = local.project
     Environment = local.environment
-    Resource    = "ecr-backend"
   }
 }
 
@@ -41,9 +39,8 @@ resource "aws_ecr_repository" "sbcntr_frontend" {
   }
 
   tags = {
-    Name        = "${local.namePrefix}-ecr-frontend"
+    Name        = "${local.project}-${local.environment}-ecr-frontend"
     Project     = local.project
     Environment = local.environment
-    Resource    = "ecr-frontend"
   }
 }
