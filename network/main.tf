@@ -2,7 +2,6 @@ locals {
   project     = "sbcntr"
   environment = "NA"
   namePrefix  = "${local.project}-${local.environment}"
-  tool        = "terraform"
 }
 
 #--------------------------------------------------
@@ -19,7 +18,6 @@ resource "aws_vpc" "sbcntr" {
     Project     = local.project
     Environment = local.environment
     Resource    = "vpc"
-    Tool        = local.tool
   }
 }
 
@@ -40,8 +38,6 @@ resource "aws_subnet" "public_ingress_1a" {
     Project     = local.project
     Environment = local.environment
     Resource    = "public-subnet-ingress-1a"
-    Tool        = local.tool
-
   }
 }
 
@@ -56,7 +52,6 @@ resource "aws_subnet" "public_ingress_1c" {
     Project     = local.project
     Environment = local.environment
     Resource    = "public-subnet-ingress-1c"
-    Tool        = local.tool
   }
 }
 
@@ -73,7 +68,6 @@ resource "aws_subnet" "private_management_1a" {
     Project     = local.project
     Environment = local.environment
     Resource    = "public-subnet-management-1a"
-    Tool        = local.tool
   }
 }
 
@@ -88,7 +82,6 @@ resource "aws_subnet" "private_management_1c" {
     Project     = local.project
     Environment = local.environment
     Resource    = "public-subnet-management-1c"
-    Tool        = local.tool
   }
 }
 
@@ -104,7 +97,6 @@ resource "aws_route_table" "public" {
     Project     = local.project
     Environment = local.environment
     Resource    = "public-rtb"
-    Tool        = local.tool
   }
 }
 
@@ -151,7 +143,6 @@ resource "aws_subnet" "private_container_1a" {
     Project     = local.project
     Environment = local.environment
     Resource    = "private-subnet-container-1a"
-    Tool        = local.tool
   }
 }
 
@@ -166,7 +157,6 @@ resource "aws_subnet" "private_container_1c" {
     Project     = local.project
     Environment = local.environment
     Resource    = "private-subnet-container-1c"
-    Tool        = local.tool
   }
 }
 
@@ -183,7 +173,6 @@ resource "aws_subnet" "private_db_1a" {
     Project     = local.project
     Environment = local.environment
     Resource    = "private-subnet-db-1a"
-    Tool        = local.tool
   }
 }
 
@@ -198,7 +187,6 @@ resource "aws_subnet" "private_db_1c" {
     Project     = local.project
     Environment = local.environment
     Resource    = "private-subnet-db-1c"
-    Tool        = local.tool
   }
 }
 
@@ -215,7 +203,6 @@ resource "aws_subnet" "private_egress_1a" {
     Project     = local.project
     Environment = local.environment
     Resource    = "private-egress-1a"
-    Tool        = local.tool
   }
 }
 
@@ -230,7 +217,6 @@ resource "aws_subnet" "private_egress_1c" {
     Project     = local.project
     Environment = local.environment
     Resource    = "private-egress-1c"
-    Tool        = local.tool
   }
 }
 
@@ -245,7 +231,6 @@ module "security_group_for_vpc_endpoint" {
   environment = local.environment
   project     = local.project
   resource    = "vpc-endpoint"
-  tool        = local.tool
 }
 
 # VPCエンドポイント
@@ -263,7 +248,6 @@ resource "aws_vpc_endpoint" "ecr_api" {
     Project     = local.project
     Environment = local.environment
     Resource    = "vpce-ecr-api"
-    Tool        = local.tool
   }
 }
 
@@ -281,7 +265,6 @@ resource "aws_vpc_endpoint" "ecr_dkr" {
     Project     = local.project
     Environment = local.environment
     Resource    = "vpce-ecr-dkr"
-    Tool        = local.tool
   }
 }
 
@@ -296,7 +279,6 @@ resource "aws_vpc_endpoint" "s3" {
     Project     = local.project
     Environment = local.environment
     Resource    = "vpce-s3"
-    Tool        = local.tool
   }
 }
 
@@ -310,7 +292,6 @@ resource "aws_route_table" "private" {
     Project     = local.project
     Environment = local.environment
     Resource    = "private-rtb"
-    Tool        = local.tool
   }
 }
 
