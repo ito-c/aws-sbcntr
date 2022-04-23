@@ -190,8 +190,7 @@ resource "aws_subnet" "private_db_1c" {
   }
 }
 
-# ECRのVPCエンドポイント用
-
+# ECRのVPCエンドポイント用サブネット
 resource "aws_subnet" "private_egress_1a" {
   vpc_id                  = aws_vpc.sbcntr.id
   cidr_block              = cidrsubnet(aws_vpc.sbcntr.cidr_block, 8, 248)
@@ -221,7 +220,6 @@ resource "aws_subnet" "private_egress_1c" {
 }
 
 # VPCエンドポイントのセキュリティグループ
-
 module "security_group_for_vpc_endpoint" {
   source      = "../modules/security_group"
   vpc_id      = aws_vpc.sbcntr.id
@@ -235,11 +233,10 @@ module "security_group_for_vpc_endpoint" {
 
 # VPCエンドポイント
 resource "aws_vpc_endpoint" "ecr_api" {
-  vpc_id            = aws_vpc.sbcntr.id
-  service_name      = "com.amazonaws.ap-northeast-1.ecr.api"
-  vpc_endpoint_type = "Interface"
-  subnet_ids        = [aws_subnet.private_egress_1a.id, aws_subnet.private_egress_1c.id]
-
+  vpc_id              = aws_vpc.sbcntr.id
+  service_name        = "com.amazonaws.ap-northeast-1.ecr.api"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = [aws_subnet.private_egress_1a.id, aws_subnet.private_egress_1c.id]
   private_dns_enabled = true
   security_group_ids  = [module.security_group_for_vpc_endpoint.security_group_id]
 
@@ -252,11 +249,10 @@ resource "aws_vpc_endpoint" "ecr_api" {
 }
 
 resource "aws_vpc_endpoint" "ecr_dkr" {
-  vpc_id            = aws_vpc.sbcntr.id
-  service_name      = "com.amazonaws.ap-northeast-1.ecr.dkr"
-  vpc_endpoint_type = "Interface"
-  subnet_ids        = [aws_subnet.private_egress_1a.id, aws_subnet.private_egress_1c.id]
-
+  vpc_id              = aws_vpc.sbcntr.id
+  service_name        = "com.amazonaws.ap-northeast-1.ecr.dkr"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = [aws_subnet.private_egress_1a.id, aws_subnet.private_egress_1c.id]
   private_dns_enabled = true
   security_group_ids  = [module.security_group_for_vpc_endpoint.security_group_id]
 
@@ -265,6 +261,22 @@ resource "aws_vpc_endpoint" "ecr_dkr" {
     Project     = local.project
     Environment = local.environment
     Resource    = "vpce-ecr-dkr"
+  }
+}
+
+resource "aws_vpc_endpoint" "logs" {
+  vpc_id              = aws_vpc.sbcntr.id
+  service_name        = "com.amazonaws.ap-northeast-1.logs"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = [aws_subnet.private_egress_1a.id, aws_subnet.private_egress_1c.id]
+  private_dns_enabled = true
+  security_group_ids  = [module.security_group_for_vpc_endpoint.security_group_id]
+
+  tags = {
+    Name        = "${local.namePrefix}-vpce-logs"
+    Project     = local.project
+    Environment = local.environment
+    Resource    = "vpce-logs"
   }
 }
 
@@ -283,7 +295,6 @@ resource "aws_vpc_endpoint" "s3" {
 }
 
 # ルートテーブル
-
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.sbcntr.id
 
@@ -296,7 +307,6 @@ resource "aws_route_table" "private" {
 }
 
 # デフォルトでローカルを向いているのでルートの追加は不要？
-
 resource "aws_route_table_association" "private_container_1a" {
   subnet_id      = aws_subnet.private_container_1a.id
   route_table_id = aws_route_table.private.id
