@@ -7,7 +7,6 @@ resource "aws_security_group" "this" {
     Project     = var.project
     Environment = var.environment
     Resource    = var.resource
-    Tool        = var.tool
   }
 }
 

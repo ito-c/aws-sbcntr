@@ -21,10 +21,6 @@ variable "project" {
   description = "project name"
   type        = string
 }
-variable "tool" {
-  description = "tool name"
-  type        = string
-}
 variable "environment" {
   description = "environment"
   type        = string
