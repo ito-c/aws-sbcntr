@@ -44,3 +44,29 @@ resource "aws_ecr_repository" "sbcntr_frontend" {
     Environment = local.environment
   }
 }
+
+data "aws_iam_policy_document" "codedeploy_assumerole" {
+  statement {
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["codedeploy.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "ecs_code_deploy" {
+  name               = "${local.project}-${local.environment}-ecs-code-deploy-role"
+  assume_role_policy = data.aws_iam_policy_document.codedeploy_assumerole.json
+
+  tags = {
+    Name        = "${local.project}-${local.environment}-ecs-code-deploy-role"
+    Project     = local.project
+    Environment = local.environment
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "codedeploy" {
+  role       = aws_iam_role.codedeploy.id
+  policy_arn = "arn:aws:iam::aws:policy/AWSCodeDeployRoleForECS"
+}
