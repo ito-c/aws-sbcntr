@@ -26,7 +26,6 @@ resource "aws_vpc" "sbcntr" {
 #--------------------------------------------------
 
 # ingress用
-
 resource "aws_subnet" "public_ingress_1a" {
   vpc_id                  = aws_vpc.sbcntr.id
   cidr_block              = cidrsubnet(aws_vpc.sbcntr.cidr_block, 8, 0)
@@ -56,8 +55,7 @@ resource "aws_subnet" "public_ingress_1c" {
 }
 
 # 管理用
-
-resource "aws_subnet" "private_management_1a" {
+resource "aws_subnet" "public_management_1a" {
   vpc_id                  = aws_vpc.sbcntr.id
   cidr_block              = cidrsubnet(aws_vpc.sbcntr.cidr_block, 8, 240)
   map_public_ip_on_launch = true
@@ -71,7 +69,7 @@ resource "aws_subnet" "private_management_1a" {
   }
 }
 
-resource "aws_subnet" "private_management_1c" {
+resource "aws_subnet" "public_management_1c" {
   vpc_id                  = aws_vpc.sbcntr.id
   cidr_block              = cidrsubnet(aws_vpc.sbcntr.cidr_block, 8, 241)
   map_public_ip_on_launch = true
@@ -131,7 +129,6 @@ resource "aws_route_table_association" "private_management_1c" {
 #--------------------------------------------------
 
 # アプリケーション用
-
 resource "aws_subnet" "private_container_1a" {
   vpc_id                  = aws_vpc.sbcntr.id
   cidr_block              = cidrsubnet(aws_vpc.sbcntr.cidr_block, 8, 8)
@@ -306,7 +303,6 @@ resource "aws_route_table" "private" {
   }
 }
 
-# デフォルトでローカルを向いているのでルートの追加は不要？
 resource "aws_route_table_association" "private_container_1a" {
   subnet_id      = aws_subnet.private_container_1a.id
   route_table_id = aws_route_table.private.id
