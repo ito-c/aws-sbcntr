@@ -114,13 +114,13 @@ resource "aws_route_table_association" "public_ingress_1c" {
   route_table_id = aws_route_table.public.id
 }
 
-resource "aws_route_table_association" "private_management_1a" {
-  subnet_id      = aws_subnet.private_management_1a.id
+resource "aws_route_table_association" "public_management_1a" {
+  subnet_id      = aws_subnet.public_management_1a.id
   route_table_id = aws_route_table.public.id
 }
 
-resource "aws_route_table_association" "private_management_1c" {
-  subnet_id      = aws_subnet.private_management_1c.id
+resource "aws_route_table_association" "public_management_1c" {
+  subnet_id      = aws_subnet.public_management_1c.id
   route_table_id = aws_route_table.public.id
 }
 
