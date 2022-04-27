@@ -83,6 +83,42 @@ resource "aws_subnet" "public_management_1c" {
   }
 }
 
+# 管理用のセキュリティグループ(ec2へ移動の可能性あり)
+module "sg_public_management" {
+  source  = "terraform-aws-modules/security-group/aws"
+  version = "4.9.0"
+
+  use_name_prefix = false
+  name            = "${local.project}-${local.environment}-sg-public-management"
+  description     = "security group for public-management"
+  vpc_id          = aws_vpc.sbcntr.id
+
+  ingress_with_cidr_blocks = [
+    {
+      from_port   = 80
+      to_port     = 80
+      protocol    = "tcp"
+      description = "ingress"
+      cidr_blocks = "0.0.0.0/0"
+    }
+  ]
+  egress_with_cidr_blocks = [
+    {
+      from_port   = 0
+      to_port     = 0
+      protocol    = "-1"
+      description = ""
+      cidr_blocks = "0.0.0.0/0"
+    }
+  ]
+
+  tags = {
+    Name        = "${local.project}-${local.environment}-sg-public-management"
+    Environment = local.environment
+    Project     = local.project
+  }
+}
+
 resource "aws_internet_gateway" "sbcntr" {
   vpc_id = aws_vpc.sbcntr.id
 }
@@ -158,7 +194,6 @@ resource "aws_subnet" "private_container_1c" {
 }
 
 # DB用
-
 resource "aws_subnet" "private_db_1a" {
   vpc_id                  = aws_vpc.sbcntr.id
   cidr_block              = cidrsubnet(aws_vpc.sbcntr.cidr_block, 8, 16)
@@ -214,18 +249,6 @@ resource "aws_subnet" "private_egress_1c" {
     Environment = local.environment
     Resource    = "private-egress-1c"
   }
-}
-
-# VPCエンドポイントのセキュリティグループ
-module "security_group_for_vpc_endpoint" {
-  source      = "../modules/security_group"
-  vpc_id      = aws_vpc.sbcntr.id
-  port        = "80"
-  cidr_blocks = ["0.0.0.0/0"]
-
-  environment = local.environment
-  project     = local.project
-  resource    = "vpc-endpoint"
 }
 
 # VPCエンドポイント
@@ -290,6 +313,54 @@ resource "aws_vpc_endpoint" "s3" {
     Resource    = "vpce-s3"
   }
 }
+
+# VPCエンドポイントのセキュリティグループ
+module "security_group_for_vpc_endpoint" {
+  source  = "terraform-aws-modules/security-group/aws"
+  version = "4.9.0"
+
+  use_name_prefix = false
+  name            = "${local.project}-${local.environment}-sg-vpc-endpoint"
+  description     = "security group for vpc-endpoint"
+  vpc_id          = aws_vpc.sbcntr.id
+
+  ingress_with_cidr_blocks = [
+    {
+      from_port   = 80
+      to_port     = 80
+      protocol    = "tcp"
+      description = "ingress"
+      cidr_blocks = "0.0.0.0/0"
+    }
+  ]
+  egress_with_cidr_blocks = [
+    {
+      from_port   = 0
+      to_port     = 0
+      protocol    = "-1"
+      description = ""
+      cidr_blocks = "0.0.0.0/0"
+    }
+  ]
+
+  tags = {
+    Name        = "${local.project}-${local.environment}-sg-vpc-endpoint"
+    Environment = local.environment
+    Project     = local.project
+  }
+}
+
+# # VPCエンドポイントのセキュリティグループ
+# module "security_group_for_vpc_endpoint" {
+#   source      = "../modules/security_group"
+#   vpc_id      = aws_vpc.sbcntr.id
+#   port        = "80"
+#   cidr_blocks = ["0.0.0.0/0"]
+
+#   environment = local.environment
+#   project     = local.project
+#   resource    = "vpc-endpoint"
+# }
 
 # ルートテーブル
 resource "aws_route_table" "private" {

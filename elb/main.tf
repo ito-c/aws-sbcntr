@@ -10,6 +10,10 @@ module "network" {
   source = "./network"
 }
 
+module "security_group" {
+  source = "./security_group"
+}
+
 #--------------------------------------------------
 # elb
 #--------------------------------------------------
@@ -37,14 +41,46 @@ resource "aws_lb" "this" {
 
 # 内部ロードバランサ用のセキュリティグループ
 module "security_group_for_internal_alb" {
-  source      = "../modules/security_group"
-  vpc_id      = module.network.vpc_id
-  port        = "80"
-  cidr_blocks = ["0.0.0.0/0"]
+  source  = "terraform-aws-modules/security-group/aws"
+  version = "4.9.0"
 
-  environment = local.environment
-  project     = local.project
-  resource    = "internal-alb"
+  use_name_prefix = false
+  name            = "${local.project}-${local.environment}-sg-internal-alb"
+  description     = "security group for internal-alb"
+  vpc_id          = module.network.vpc_id
+
+  # フロントエンドappからのインバウンドルール追加
+  ingress_with_source_security_group_id = [
+    {
+      from_port                = 80
+      to_port                  = 80
+      protocol                 = "tcp"
+      description              = "ingress from management"
+      source_security_group_id = module.security_group.sg_public_management_id
+    },
+    {
+      from_port                = 10080
+      to_port                  = 10080
+      protocol                 = "tcp"
+      description              = "ingress from management"
+      source_security_group_id = module.security_group.sg_public_management_id
+    },
+  ]
+  egress_with_cidr_blocks = [
+    {
+      from_port   = 0
+      to_port     = 0
+      protocol    = "-1"
+      description = ""
+      cidr_blocks = "0.0.0.0/0"
+    }
+  ]
+
+  tags = {
+    Name        = "${local.project}-${local.environment}-sg-internal-alb"
+    Environment = local.environment
+    Project     = local.project
+  }
 }
 
 # blue listener
