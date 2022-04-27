@@ -67,6 +67,6 @@ resource "aws_iam_role" "ecs_code_deploy" {
 }
 
 resource "aws_iam_role_policy_attachment" "codedeploy" {
-  role       = aws_iam_role.codedeploy.id
+  role       = aws_iam_role.ecs_code_deploy.id
   policy_arn = "arn:aws:iam::aws:policy/AWSCodeDeployRoleForECS"
 }
