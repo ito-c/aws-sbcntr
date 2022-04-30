@@ -67,3 +67,30 @@ resource "aws_ecs_cluster" "backend" {
     Environment = local.environment
   }
 }
+
+#--------------------------------------------------
+# ECS service
+#--------------------------------------------------
+
+resource "aws_ecs_service" "backend" {
+  name = "${local.project}-${local.environment}-esc-backend-service"
+
+  platform_version = "1.4.0"
+  launch_type      = "FARGATE"
+  cluster          = aws_ecs_cluster.backend.id
+  task_definition  = aws_ecs_task_definition.backend.arn
+  desired_count    = 2
+
+  deployment_minimum_healthy_percent = 100
+  deployment_maximum_percent         = 200
+  deployment_circuit_breaker {
+    enable   = false
+    rollback = false
+  }
+
+  tags = {
+    Name        = "${local.project}-${local.environment}-esc-backend-service"
+    Project     = local.project
+    Environment = local.environment
+  }
+}
