@@ -8,9 +8,9 @@ locals {
 #--------------------------------------------------
 
 resource "aws_ecs_task_definition" "backend" {
-  family                   = "${local.project}-${local.environment}-backend"
+  family                   = "${local.project}-${local.environment}-esc-backend"
   requires_compatibilities = ["FARGATE"]
-  memory                   = "1024"
+  memory                   = 1024
   cpu                      = 512
   network_mode             = "awsvpc"
   container_definitions = jsonencode(
@@ -44,6 +44,25 @@ resource "aws_ecs_task_definition" "backend" {
 
   tags = {
     Name        = "${local.project}-${local.environment}-esc-backend"
+    Project     = local.project
+    Environment = local.environment
+  }
+}
+
+#--------------------------------------------------
+# ECS
+#--------------------------------------------------
+
+resource "aws_ecs_cluster" "backend" {
+  name = "${local.project}-${local.environment}-esc-backend-cluster"
+
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
+
+  tags = {
+    Name        = "${local.project}-${local.environment}-esc-backend-cluster"
     Project     = local.project
     Environment = local.environment
   }
