@@ -4,11 +4,11 @@ locals {
 }
 
 #--------------------------------------------------
-# ECS
+# ECS task def
 #--------------------------------------------------
 
 resource "aws_ecs_task_definition" "backend" {
-  family                   = "${local.project}-${local.environment}-esc-backend"
+  family                   = "${local.project}-${local.environment}-esc-backend-def"
   requires_compatibilities = ["FARGATE"]
   memory                   = 1024
   cpu                      = 512
@@ -43,14 +43,14 @@ resource "aws_ecs_task_definition" "backend" {
   )
 
   tags = {
-    Name        = "${local.project}-${local.environment}-esc-backend"
+    Name        = "${local.project}-${local.environment}-esc-backend-def"
     Project     = local.project
     Environment = local.environment
   }
 }
 
 #--------------------------------------------------
-# ECS
+# ECS cluster
 #--------------------------------------------------
 
 resource "aws_ecs_cluster" "backend" {
