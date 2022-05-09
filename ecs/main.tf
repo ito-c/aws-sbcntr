@@ -15,6 +15,10 @@ module "security_group" {
   source = "./security_group"
 }
 
+module "elb" {
+  source = "./elb"
+}
+
 #--------------------------------------------------
 # ECS task def
 #--------------------------------------------------
@@ -112,6 +116,12 @@ resource "aws_ecs_service" "backend" {
   deployment_controller {
     // blue/greenのためCODE_DEPLOY
     type = "CODE_DEPLOY"
+  }
+
+  load_balancer {
+    target_group_arn = module.elb.tg_blue_arn
+    container_name   = aws_ecs_task_definition.backend.container_name
+    container_port   = 80
   }
 
   lifecycle {
