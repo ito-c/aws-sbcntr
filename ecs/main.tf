@@ -4,6 +4,18 @@ locals {
 }
 
 #--------------------------------------------------
+# Data only Modules
+#--------------------------------------------------
+
+module "network" {
+  source = "./network"
+}
+
+module "security_group" {
+  source = "./security_group"
+}
+
+#--------------------------------------------------
 # ECS task def
 #--------------------------------------------------
 
@@ -88,9 +100,68 @@ resource "aws_ecs_service" "backend" {
     rollback = false
   }
 
+  network_configuration {
+    subnets = [
+      module.network.private_container_1a_id,
+      module.network.private_container_1c_id
+    ]
+    assign_public_ip = false
+    security_groups  = [module.security_group_for_backend_service.security_group_id]
+  }
+
+  deployment_controller {
+    // blue/greenのためCODE_DEPLOY
+    type = "CODE_DEPLOY"
+  }
+
+  lifecycle {
+    // 値がCodeDeployに依存するためignore_changes
+    ignore_changes = [
+      load_balancer,
+      desired_count,
+      task_definition,
+    ]
+  }
+
   tags = {
     Name        = "${local.project}-${local.environment}-esc-backend-service"
     Project     = local.project
     Environment = local.environment
+  }
+}
+
+module "security_group_for_backend_service" {
+  source  = "terraform-aws-modules/security-group/aws"
+  version = "4.9.0"
+
+  use_name_prefix = false
+  name            = "${local.project}-${local.environment}-sg-backend-service"
+  description     = "security group for backend service"
+  vpc_id          = module.network.vpc_id
+
+  # 内部ロードバランサから通信を受ける
+  ingress_with_source_security_group_id = [
+    {
+      from_port                = 80
+      to_port                  = 80
+      protocol                 = "tcp"
+      description              = "ingress from internal alb"
+      source_security_group_id = module.security_group.sg_internal_alb_id
+    }
+  ]
+  egress_with_cidr_blocks = [
+    {
+      from_port   = 0
+      to_port     = 0
+      protocol    = "-1"
+      description = ""
+      cidr_blocks = "0.0.0.0/0"
+    }
+  ]
+
+  tags = {
+    Name        = "${local.project}-${local.environment}-sg-backend-service"
+    Environment = local.environment
+    Project     = local.project
   }
 }
