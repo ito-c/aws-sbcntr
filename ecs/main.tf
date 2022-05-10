@@ -120,7 +120,7 @@ resource "aws_ecs_service" "backend" {
 
   load_balancer {
     target_group_arn = module.elb.tg_blue_arn
-    container_name   = aws_ecs_task_definition.backend.container_name
+    container_name   = "app" # 変数化したい
     container_port   = 80
   }
 
