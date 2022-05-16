@@ -91,11 +91,12 @@ resource "aws_ecs_cluster" "backend" {
 resource "aws_ecs_service" "backend" {
   name = "${local.project}-${local.environment}-esc-backend-service"
 
-  platform_version = "1.4.0"
-  launch_type      = "FARGATE"
-  cluster          = aws_ecs_cluster.backend.id
-  task_definition  = aws_ecs_task_definition.backend.arn
-  desired_count    = 2
+  platform_version                  = "1.4.0"
+  launch_type                       = "FARGATE"
+  cluster                           = aws_ecs_cluster.backend.id
+  task_definition                   = aws_ecs_task_definition.backend.arn
+  desired_count                     = 2
+  health_check_grace_period_seconds = 120
 
   deployment_minimum_healthy_percent = 100
   deployment_maximum_percent         = 200
