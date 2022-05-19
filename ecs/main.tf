@@ -29,6 +29,7 @@ resource "aws_ecs_task_definition" "backend" {
   memory                   = 1024
   cpu                      = 512
   network_mode             = "awsvpc"
+  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
   container_definitions = jsonencode(
     [
       {
@@ -49,7 +50,7 @@ resource "aws_ecs_task_definition" "backend" {
         "logConfiguration" : {
           "logDriver" : "awslogs",
           "options" : {
-            "awslogs-group" : "/ecs/{task-definition-name}",
+            "awslogs-group" : "${local.project}-${local.environment}-esc-log-group",
             "awslogs-region" : "ap-northeast-1",
             "awslogs-stream-prefix" : "ecs",
           }
@@ -62,6 +63,28 @@ resource "aws_ecs_task_definition" "backend" {
     Name        = "${local.project}-${local.environment}-esc-backend-def"
     Project     = local.project
     Environment = local.environment
+  }
+}
+
+# IAM
+resource "aws_iam_role" "ecs_task_execution_role" {
+  name               = "${local.project}-${local.environment}-ecs-task-execution-role"
+  assume_role_policy = data.aws_iam_policy_document.ecs_task_assume_role.json
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_managed_policy" {
+  role       = aws_iam_role.ecs_task_execution_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
+data "aws_iam_policy_document" "ecs_task_assume_role" {
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["ecs-tasks.amazonaws.com"]
+    }
   }
 }
 
