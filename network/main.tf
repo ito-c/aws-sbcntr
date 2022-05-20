@@ -326,8 +326,8 @@ module "security_group_for_vpc_endpoint" {
 
   ingress_with_cidr_blocks = [
     {
-      from_port   = 80
-      to_port     = 80
+      from_port   = 443
+      to_port     = 443
       protocol    = "tcp"
       description = "ingress"
       cidr_blocks = "0.0.0.0/0"
@@ -349,18 +349,6 @@ module "security_group_for_vpc_endpoint" {
     Project     = local.project
   }
 }
-
-# # VPCエンドポイントのセキュリティグループ
-# module "security_group_for_vpc_endpoint" {
-#   source      = "../modules/security_group"
-#   vpc_id      = aws_vpc.sbcntr.id
-#   port        = "80"
-#   cidr_blocks = ["0.0.0.0/0"]
-
-#   environment = local.environment
-#   project     = local.project
-#   resource    = "vpc-endpoint"
-# }
 
 # ルートテーブル
 resource "aws_route_table" "private" {
