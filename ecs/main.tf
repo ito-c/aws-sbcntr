@@ -50,7 +50,7 @@ resource "aws_ecs_task_definition" "backend" {
         "logConfiguration" : {
           "logDriver" : "awslogs",
           "options" : {
-            "awslogs-group" : "${local.project}-${local.environment}-esc-log-group",
+            "awslogs-group" : "${local.project}-${local.environment}-esc-backend-log-group",
             "awslogs-region" : "ap-northeast-1",
             "awslogs-stream-prefix" : "ecs",
           }
@@ -85,6 +85,20 @@ data "aws_iam_policy_document" "ecs_task_assume_role" {
       type        = "Service"
       identifiers = ["ecs-tasks.amazonaws.com"]
     }
+  }
+}
+
+#--------------------------------------------------
+# CloudWatch Logs
+#--------------------------------------------------
+
+resource "aws_cloudwatch_log_group" "backend" {
+  name = "${local.project}-${local.environment}-esc-backend-log-group"
+
+  tags = {
+    Name        = "${local.project}-${local.environment}-esc-backend-log-group"
+    Project     = local.project
+    Environment = local.environment
   }
 }
 
